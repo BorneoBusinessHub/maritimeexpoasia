@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+/* Palette from docs/05-brand-and-tone.md [TBC: owner may have a logo and palette].
+   deep/abyss/glow are darker and lighter steps of the same navy and amber. */
+@theme inline {
+  --color-navy: #1f4e79;
+  --color-deep: #0c2740;
+  --color-abyss: #081b2e;
+  --color-blue: #5b8db8;
+  --color-pale: #dce6f1;
+  --color-paper: #f4f6f9;
+  --color-amber: #b45309;
+  --color-glow: #f0b06a;
+  --color-ink: #1f2937;
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-bricolage);
+  --ease-fluid: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+}
+
+/* Film grain: fixed, non-interactive, never attached to scrolling content. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Scroll reveal. Hidden only when JS runs and motion is allowed, so content never depends on JS. */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(2.5rem);
+    filter: blur(6px);
+    transition:
+      opacity 900ms var(--ease-fluid),
+      transform 900ms var(--ease-fluid),
+      filter 900ms var(--ease-fluid);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  [data-reveal][data-in] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
