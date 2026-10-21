@@ -8,6 +8,7 @@ import { IconBadge, pill } from "@/components/pill";
 const LINKS = [
   { href: "/", label: "Expo 2027" },
   { href: "/summit-2027", label: "March Summit" },
+  { href: "/events", label: "Events" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -42,7 +43,7 @@ export default function Nav() {
               <Link
                 key={l.href}
                 href={l.href}
-                aria-current={path === l.href ? "page" : undefined}
+                aria-current={path === l.href || (l.href !== "/" && path.startsWith(`${l.href}/`)) ? "page" : undefined}
                 className="rounded-full px-4 py-2 text-sm font-medium text-ink/70 transition-colors duration-500 ease-fluid hover:text-deep aria-[current=page]:bg-deep/5 aria-[current=page]:text-deep"
               >
                 {l.label}
