@@ -193,6 +193,8 @@ export function describeEventError(err: { code?: string; message?: string }): st
   if (message.includes("events_confirmed_needs_start")) return "Dates marked confirmed need a start date.";
   if (message.includes("events_approved_complete"))
     return "An approved event needs an official website, a source URL, a last-checked date and coordinates.";
+  if (message.includes("events_slug_check")) return "The slug can only use lowercase letters, numbers and single hyphens.";
+  if (message.includes("events_urls_http")) return "Website and source links must start with http:// or https://.";
   if (err.code === "23505") return "That slug is already used by another event.";
   return "Could not save the event. Please try again.";
 }

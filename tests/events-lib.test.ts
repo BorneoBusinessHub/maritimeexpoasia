@@ -169,6 +169,14 @@ test("describeEventError turns database errors into readable text", () => {
     describeEventError({ message: 'violates check constraint "events_approved_complete"' }),
     "An approved event needs an official website, a source URL, a last-checked date and coordinates.",
   );
+  assert.equal(
+    describeEventError({ message: 'violates check constraint "events_slug_check"' }),
+    "The slug can only use lowercase letters, numbers and single hyphens.",
+  );
+  assert.equal(
+    describeEventError({ message: 'violates check constraint "events_urls_http"' }),
+    "Website and source links must start with http:// or https://.",
+  );
   assert.equal(describeEventError({ code: "23505", message: "duplicate key" }), "That slug is already used by another event.");
   assert.equal(describeEventError({ message: "boom" }), "Could not save the event. Please try again.");
 });
