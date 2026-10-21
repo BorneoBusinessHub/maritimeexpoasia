@@ -8,7 +8,7 @@ async function loaded() {
   const { data, error } = await service()
     .from("events")
     .select("slug,region,dates_confirmed,start_date,website_url,source_url,last_checked,latitude,longitude")
-    .eq("featured", false)
+    .eq("tier", "listed")
     .not("slug", "like", "test-%");
   assert.equal(error, null);
   return data ?? [];

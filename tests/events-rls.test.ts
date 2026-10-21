@@ -64,9 +64,14 @@ test("website and source links must be http(s)", async () => {
   assert.match(error?.message ?? "", /events_urls_http/);
 });
 
-test("own events are seeded, approved and featured", async () => {
-  const { data } = await anon().from("events").select("slug,featured").eq("featured", true);
-  const slugs = (data ?? []).map((r) => r.slug);
-  assert.ok(slugs.includes("maritime-expo-asia-2027"));
-  assert.ok(slugs.includes("sarawak-maritime-industry-summit-2027"));
+test("own events are seeded with their tiers", async () => {
+  const { data } = await anon().from("events").select("slug,tier").in("tier", ["anchor", "cohosted"]);
+  const tiers = Object.fromEntries((data ?? []).map((r) => [r.slug, r.tier]));
+  assert.equal(tiers["maritime-expo-asia-2027"], "anchor");
+  assert.equal(tiers["sarawak-maritime-industry-summit-2027"], "cohosted");
+});
+
+test("a second anchor is rejected", async () => {
+  const { error } = await (await admin()).from("events").insert(eventRow({ tier: "anchor" }));
+  assert.match(error?.message ?? "", /events_one_anchor/);
 });

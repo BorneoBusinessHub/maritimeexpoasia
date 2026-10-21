@@ -18,7 +18,7 @@ export function eventRow(over: Record<string, unknown> = {}): Record<string, unk
     source_url: "https://example.org/dates",
     last_checked: "2026-10-21",
     status: "approved",
-    featured: false,
+    tier: "listed",
     ...over,
   };
 }
