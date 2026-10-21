@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   describeEventError,
   filterEvents,
+  formatDate,
   formatDates,
   parseFilters,
   slugify,
@@ -111,6 +112,11 @@ test("formatDates handles ranges, year change, single day and unconfirmed", () =
   assert.equal(formatDates(ev({ start_date: "2027-10-05", end_date: null })), "5 Oct 2027");
   assert.equal(formatDates(unconfirmed({ date_note: "September 2027" })), "September 2027");
   assert.equal(formatDates(unconfirmed()), "Dates to be announced");
+});
+
+test("formatDate writes a single date in words", () => {
+  assert.equal(formatDate("2026-10-21"), "21 Oct 2026");
+  assert.equal(formatDate("2027-01-05"), "5 Jan 2027");
 });
 
 test("toIcs makes all-day events with an exclusive DTEND", () => {

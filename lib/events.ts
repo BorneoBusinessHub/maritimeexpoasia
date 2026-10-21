@@ -97,10 +97,16 @@ function parts(date: string) {
   return { y, m: MONTHS[m - 1], d };
 }
 
+// One date in words, e.g. "21 Oct 2026".
+export function formatDate(date: string): string {
+  const p = parts(date);
+  return `${p.d} ${p.m} ${p.y}`;
+}
+
 export function formatDates(e: MaritimeEvent): string {
   if (!hasDates(e)) return e.date_note ?? "Dates to be announced";
   const s = parts(e.start_date);
-  if (!e.end_date || e.end_date === e.start_date) return `${s.d} ${s.m} ${s.y}`;
+  if (!e.end_date || e.end_date === e.start_date) return formatDate(e.start_date);
   const t = parts(e.end_date);
   if (s.y !== t.y) return `${s.d} ${s.m} ${s.y} – ${t.d} ${t.m} ${t.y}`;
   if (s.m !== t.m) return `${s.d} ${s.m} – ${t.d} ${t.m} ${t.y}`;
