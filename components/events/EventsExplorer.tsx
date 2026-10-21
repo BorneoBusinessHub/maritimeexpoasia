@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useSyncExternalStore } from "react";
@@ -36,6 +37,12 @@ function monthOptions(today: string) {
 
 const subscribe = () => () => {};
 
+// Leaflet touches `window`, so the map loads in the browser only, and only when the Map view is chosen.
+const EventMap = dynamic(() => import("./EventMap"), {
+  ssr: false,
+  loading: () => <div className="h-[28rem] w-full rounded-[2rem] bg-pale sm:h-[34rem]" />,
+});
+
 export default function EventsExplorer({ events }: { events: MaritimeEvent[] }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -54,12 +61,27 @@ export default function EventsExplorer({ events }: { events: MaritimeEvent[] }) 
     router.replace(next.size ? `${pathname}?${next}` : pathname, { scroll: false });
   }
 
+  const view = params.get("view") === "map" ? "map" : "list";
+
   if (events.length === 0) {
     return <p className="text-lg text-ink/80">Events calendar coming soon</p>;
   }
 
   return (
     <div>
+      <div role="group" aria-label="View" className="mb-6 inline-flex rounded-full bg-white p-1 ring-1 ring-ink/10">
+        {(["list", "map"] as const).map((v) => (
+          <button
+            key={v}
+            type="button"
+            aria-pressed={view === v}
+            onClick={() => setParam("view", v === "map" ? "map" : "")}
+            className="rounded-full px-5 py-2 text-sm font-semibold capitalize text-ink/70 transition-colors duration-500 ease-fluid aria-pressed:bg-deep aria-pressed:text-white"
+          >
+            {v}
+          </button>
+        ))}
+      </div>
       <div className="grid gap-4 sm:grid-cols-3">
         <label className="block">
           <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] text-ink/60">Region</span>
@@ -103,6 +125,10 @@ export default function EventsExplorer({ events }: { events: MaritimeEvent[] }) 
             Clear filters
           </Link>
         </p>
+      ) : view === "map" ? (
+        <div className="mt-10">
+          <EventMap events={visible} />
+        </div>
       ) : (
         <ul className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {visible.map((e) => (
