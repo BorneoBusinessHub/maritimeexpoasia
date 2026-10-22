@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import CohostedHero from "@/components/cohosted/CohostedHero";
+import HostedBy from "@/components/cohosted/HostedBy";
 import { Suspense } from "react";
 import EnquiryForm from "@/components/EnquiryForm";
 import Reveal from "@/components/Reveal";
 import UrlEnquiryForm from "@/components/UrlEnquiryForm";
-import { Bezel, Button, Eyebrow, Glows, H2, Section, Waves } from "@/components/ui";
+import { Bezel, Eyebrow, H2, Section } from "@/components/ui";
 import type { EnquiryType } from "@/lib/enquiry";
 import dryDock from "@/public/photos/vessel-dry-dock.jpg";
 
@@ -45,59 +46,34 @@ const TOPICS = [
 ];
 
 const FORM_TYPES: EnquiryType[] = ["interest", "exhibitor", "sponsor"];
+const EVENT = "sarawak-maritime-industry-summit-2027";
 
 export default function Summit() {
   return (
     <>
-      <section className="relative isolate overflow-hidden bg-deep text-white">
-        <Glows />
-        <Waves />
-        <div className="relative mx-auto grid min-h-[100dvh] max-w-7xl items-center gap-14 px-4 pb-28 pt-40 sm:px-8 lg:grid-cols-[1.35fr_1fr]">
-          <div>
-            <Reveal>
-              <Eyebrow dark>Road to Maritime Expo Asia 2027</Eyebrow>
-            </Reveal>
-            <Reveal delay={100}>
-              <h1 className="mt-7 font-display text-[clamp(2.75rem,7vw,5.75rem)] font-semibold leading-[0.96] tracking-tight">
-                Sarawak Maritime Industry <span className="text-glow">Summit 2027</span>
-              </h1>
-            </Reveal>
-            <Reveal delay={200} className="mt-10 flex flex-wrap gap-3">
-              <Button href="?type=interest#enquire">Register your interest</Button>
-              <Button href="?type=exhibitor#enquire" variant="onDark">
-                Exhibit
-              </Button>
-              <Button href="?type=sponsor#enquire" variant="onDark">
-                Sponsor
-              </Button>
-            </Reveal>
-          </div>
-
-          <Reveal delay={300}>
-            <Bezel dark innerClassName="overflow-hidden">
-              <div className="relative h-44 sm:h-52">
-                <Image src={dryDock} alt="A ship on a dry dock beside a crane" fill priority placeholder="blur" sizes="(min-width: 1024px) 35vw, 100vw" className="object-cover" />
-                <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-deep/80 to-transparent" />
-                <p className="absolute bottom-3 left-4 rounded-full bg-deep/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white">
-                  Illustrative stock photo
-                </p>
-              </div>
-              <dl className="space-y-6 p-7 sm:p-9">
-                <div>
-                  <dt className="text-[10px] font-semibold uppercase tracking-[0.2em] text-glow">When</dt>
-                  <dd className="mt-1 font-display text-2xl font-semibold">Late March 2027</dd>
-                  <dd className="text-[15px] text-pale/80">Exact date to be announced</dd>
-                </div>
-                <div className="border-t border-white/10 pt-6">
-                  <dt className="text-[10px] font-semibold uppercase tracking-[0.2em] text-glow">Where</dt>
-                  <dd className="mt-1 font-display text-2xl font-semibold">Sibu, Sarawak</dd>
-                  <dd className="text-[15px] text-pale/80">Venue to be announced</dd>
-                </div>
-              </dl>
-            </Bezel>
-          </Reveal>
-        </div>
-      </section>
+      <CohostedHero
+        eyebrow="Road to Maritime Expo Asia 2027"
+        title={
+          <>
+            Sarawak Maritime Industry <span className="text-glow">Summit 2027</span>
+          </>
+        }
+        when="Late March 2027"
+        whenNote="Exact date to be announced"
+        where="Sibu, Sarawak"
+        whereNote="Venue to be announced"
+        actions={[
+          { href: "?type=interest#enquire", label: "Register your interest", primary: true },
+          { href: "?type=exhibitor#enquire", label: "Exhibit" },
+          { href: "?type=sponsor#enquire", label: "Sponsor" },
+        ]}
+        image={dryDock}
+        imageAlt="A ship on a dry dock beside a crane"
+      />
+      <HostedBy
+        credit="Hosted by the Sarawak Association of Marine Industries (SAMIN), co-organised by MarineX International."
+        note="Part of the road to Maritime Expo Asia 2027."
+      />
 
       <Section>
         <Reveal>
@@ -198,8 +174,8 @@ export default function Summit() {
           <Reveal delay={150}>
             <Bezel dark>
               <div className="rounded-[calc(2rem-0.375rem)] bg-white p-6 text-ink sm:p-9">
-                <Suspense fallback={<EnquiryForm types={FORM_TYPES} />}>
-                  <UrlEnquiryForm types={FORM_TYPES} />
+                <Suspense fallback={<EnquiryForm types={FORM_TYPES} event={EVENT} />}>
+                  <UrlEnquiryForm types={FORM_TYPES} event={EVENT} />
                 </Suspense>
               </div>
             </Bezel>

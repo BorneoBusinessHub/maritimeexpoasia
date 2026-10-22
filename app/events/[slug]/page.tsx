@@ -7,7 +7,8 @@ import { getApprovedEvent, getApprovedEvents } from "@/lib/events-data";
 import { formatDate, formatDates, staticSlugs, tierBadge } from "@/lib/events";
 
 export async function generateStaticParams() {
-  return staticSlugs(await getApprovedEvents());
+  // Anchor and co-hosted events have their own pages; this generic page is for listed events.
+  return staticSlugs((await getApprovedEvents()).filter((e) => e.tier === "listed"));
 }
 
 export async function generateMetadata({ params }: PageProps<"/events/[slug]">): Promise<Metadata> {
