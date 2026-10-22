@@ -50,7 +50,7 @@ export default function EventForm({ event }: { event?: MaritimeEvent }) {
       source_url: text(form, "source_url"),
       last_checked: text(form, "last_checked"),
       status: text(form, "status") as EventInput["status"],
-      featured: form.get("featured") === "on",
+      tier: text(form, "tier") as EventInput["tier"],
     };
     start(async () => {
       const result = await saveEvent(value);
@@ -134,10 +134,13 @@ export default function EventForm({ event }: { event?: MaritimeEvent }) {
             ))}
           </select>
         </Field>
-        <label className="flex items-center gap-3 text-sm sm:col-span-2">
-          <input name="featured" type="checkbox" defaultChecked={event?.featured} className="size-4 accent-navy" />
-          Pin at the top (our own events)
-        </label>
+        <Field label="Tier" hint="Only one event can be the anchor. Co-hosted events also need a page built for them.">
+          <select name="tier" defaultValue={event?.tier ?? "listed"} className={input}>
+            <option value="anchor">Our event (anchor)</option>
+            <option value="cohosted">Co-hosted</option>
+            <option value="listed">Listed</option>
+          </select>
+        </Field>
       </div>
       <Field label="Description" hint="Your own words, facts only. Do not copy text from the organiser.">
         <textarea name="description" rows={4} defaultValue={event?.description ?? ""} className={input} />

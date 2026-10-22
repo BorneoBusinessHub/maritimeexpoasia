@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { CATEGORY_LABELS, REGION_LABELS } from "@/components/events/labels";
 import { Bezel, Button, PageHeader, Section } from "@/components/ui";
 import { getApprovedEvent, getApprovedEvents } from "@/lib/events-data";
-import { formatDate, formatDates, staticSlugs } from "@/lib/events";
+import { formatDate, formatDates, staticSlugs, tierBadge } from "@/lib/events";
 
 export async function generateStaticParams() {
   return staticSlugs(await getApprovedEvents());
@@ -36,7 +36,7 @@ export default async function EventPage({ params }: PageProps<"/events/[slug]">)
 
   return (
     <>
-      <PageHeader eyebrow={e.featured ? "Our event" : "Event"} title={e.name}>
+      <PageHeader eyebrow={tierBadge(e.tier) ?? "Event"} title={e.name}>
         {formatDates(e)} · {e.city}, {e.country}
       </PageHeader>
       <Section>

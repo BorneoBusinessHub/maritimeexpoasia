@@ -3,7 +3,7 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef } from "react";
-import { formatDates, type MaritimeEvent } from "@/lib/events";
+import { eventHref, formatDates, type MaritimeEvent } from "@/lib/events";
 
 // Events in the same city share one pin; its popup lists them all.
 function groupByPlace(events: MaritimeEvent[]) {
@@ -23,7 +23,7 @@ function popupFor(group: MaritimeEvent[]): HTMLElement {
     const block = document.createElement("div");
     if (i > 0) block.style.marginTop = "0.6rem";
     const link = document.createElement("a");
-    link.href = `/events/${e.slug}`;
+    link.href = eventHref(e);
     link.textContent = e.name;
     link.style.fontWeight = "600";
     const when = document.createElement("div");
@@ -51,7 +51,7 @@ export default function EventMap({ events }: { events: MaritimeEvent[] }) {
     for (const group of groupByPlace(events)) {
       const pos: L.LatLngTuple = [group[0].latitude!, group[0].longitude!];
       points.push(pos);
-      const colour = group.some((e) => e.featured) ? "#b45309" : "#1f4e79";
+      const colour = group.some((e) => e.tier !== "listed") ? "#b45309" : "#1f4e79";
       L.circleMarker(pos, { radius: 9, color: colour, fillColor: colour, fillOpacity: 0.85, weight: 2 })
         .bindPopup(popupFor(group))
         .addTo(map);

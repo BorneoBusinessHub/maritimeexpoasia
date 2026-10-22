@@ -4,9 +4,14 @@
 export const REGIONS = ["asia_pacific", "europe", "middle_east_africa", "americas"] as const;
 export const CATEGORIES = ["exhibition", "conference", "exhibition_conference"] as const;
 export const STATUSES = ["pending", "approved", "hidden"] as const;
+// anchor: Maritime Expo Asia; cohosted: events we run with partners; listed: other organisers' events.
+export const TIERS = ["anchor", "cohosted", "listed"] as const;
 export type Region = (typeof REGIONS)[number];
 export type Category = (typeof CATEGORIES)[number];
 export type EventStatus = (typeof STATUSES)[number];
+export type Tier = (typeof TIERS)[number];
+
+const ANCHOR_PATH = "/maritime-expo-asia-2027";
 
 export type MaritimeEvent = {
   id: string;
@@ -29,7 +34,7 @@ export type MaritimeEvent = {
   source_url: string;
   last_checked: string;
   status: EventStatus;
-  featured: boolean;
+  tier: Tier;
 };
 
 export type Filters = { region?: Region; category?: Category; month?: string };
@@ -83,13 +88,35 @@ export function filterEvents(events: MaritimeEvent[], filters: Filters, today: s
 
 export function sortEvents(events: MaritimeEvent[]): MaritimeEvent[] {
   return [...events].sort((a, b) => {
-    if (a.featured !== b.featured) return a.featured ? -1 : 1;
+    if (a.tier !== b.tier) return TIERS.indexOf(a.tier) - TIERS.indexOf(b.tier);
     const aDated = hasDates(a);
     const bDated = hasDates(b);
     if (aDated !== bDated) return aDated ? -1 : 1;
     if (aDated && bDated && a.start_date !== b.start_date) return a.start_date! < b.start_date! ? -1 : 1;
     return a.name.localeCompare(b.name);
   });
+}
+
+// The anchor has its own page; co-hosted pages are static routes under /events, listed events use [slug].
+export function eventHref(e: { slug: string; tier: Tier }): string {
+  return e.tier === "anchor" ? ANCHOR_PATH : `/events/${e.slug}`;
+}
+
+export function tierBadge(tier: Tier): string | null {
+  return tier === "anchor" ? "Our event" : tier === "cohosted" ? "Co-hosted" : null;
+}
+
+// Home page: co-hosted events still to come, and the next six dated events (any tier but the anchor) by date.
+export function selectHomeEvents(
+  events: MaritimeEvent[],
+  today: string,
+): { cohosted: MaritimeEvent[]; upcoming: MaritimeEvent[] } {
+  const live = filterEvents(events, {}, today);
+  const upcoming = live
+    .filter((e): e is MaritimeEvent & { start_date: string } => e.tier !== "anchor" && hasDates(e))
+    .sort((a, b) => (a.start_date === b.start_date ? a.name.localeCompare(b.name) : a.start_date < b.start_date ? -1 : 1))
+    .slice(0, 6);
+  return { cohosted: sortEvents(live.filter((e) => e.tier === "cohosted")), upcoming };
 }
 
 function parts(date: string) {
@@ -195,6 +222,7 @@ export function describeEventError(err: { code?: string; message?: string }): st
     return "An approved event needs an official website, a source URL, a last-checked date and coordinates.";
   if (message.includes("events_slug_check")) return "The slug can only use lowercase letters, numbers and single hyphens.";
   if (message.includes("events_urls_http")) return "Website and source links must start with http:// or https://.";
+  if (message.includes("events_one_anchor")) return "Only one event can be the anchor.";
   if (err.code === "23505") return "That slug is already used by another event.";
   return "Could not save the event. Please try again.";
 }

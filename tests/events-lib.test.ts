@@ -2,13 +2,16 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   describeEventError,
+  eventHref,
   filterEvents,
   formatDate,
   formatDates,
   parseFilters,
+  selectHomeEvents,
   slugify,
   sortEvents,
   staticSlugs,
+  tierBadge,
   todayInKuching,
   toIcs,
   type MaritimeEvent,
@@ -38,7 +41,7 @@ function ev(over: Partial<MaritimeEvent> = {}): MaritimeEvent {
     source_url: "https://example.org/dates",
     last_checked: "2026-10-21",
     status: "approved",
-    featured: false,
+    tier: "listed",
     ...over,
   };
 }
@@ -93,12 +96,12 @@ test("parseFilters drops invalid values and keeps valid ones", () => {
   });
 });
 
-test("sortEvents puts featured first, then dates ascending, unconfirmed last", () => {
+test("sortEvents puts pinned tiers first, then dates ascending, unconfirmed last", () => {
   const late = ev({ start_date: "2027-09-01", end_date: null, name: "Late" });
   const early = ev({ start_date: "2027-02-01", end_date: null, name: "Early" });
   const tie2 = ev({ start_date: "2027-02-01", end_date: null, name: "Zed" });
   const tbc = unconfirmed({ name: "Aaa TBC" });
-  const pinned = ev({ start_date: "2028-01-01", end_date: null, name: "Pinned", featured: true });
+  const pinned = ev({ start_date: "2028-01-01", end_date: null, name: "Pinned", tier: "cohosted" });
   assert.deepEqual(
     sortEvents([late, tbc, tie2, pinned, early]).map((e) => e.name),
     ["Pinned", "Early", "Zed", "Late", "Aaa TBC"],
@@ -179,4 +182,52 @@ test("describeEventError turns database errors into readable text", () => {
   );
   assert.equal(describeEventError({ code: "23505", message: "duplicate key" }), "That slug is already used by another event.");
   assert.equal(describeEventError({ message: "boom" }), "Could not save the event. Please try again.");
+});
+
+test("sortEvents orders anchor, then co-hosted, then listed", () => {
+  const listed = ev({ start_date: "2027-01-10", end_date: null, name: "Listed" });
+  const cohosted = ev({ start_date: "2027-12-01", end_date: null, name: "Cohosted", tier: "cohosted" });
+  const anchor = unconfirmed({ name: "Anchor", tier: "anchor" });
+  assert.deepEqual(sortEvents([listed, cohosted, anchor]).map((e) => e.name), ["Anchor", "Cohosted", "Listed"]);
+});
+
+test("eventHref sends the anchor to its own page and others under /events", () => {
+  assert.equal(eventHref({ slug: "maritime-expo-asia-2027", tier: "anchor" }), "/maritime-expo-asia-2027");
+  assert.equal(
+    eventHref({ slug: "sarawak-maritime-industry-summit-2027", tier: "cohosted" }),
+    "/events/sarawak-maritime-industry-summit-2027",
+  );
+  assert.equal(eventHref({ slug: "smm", tier: "listed" }), "/events/smm");
+});
+
+test("tierBadge labels our own and co-hosted events only", () => {
+  assert.equal(tierBadge("anchor"), "Our event");
+  assert.equal(tierBadge("cohosted"), "Co-hosted");
+  assert.equal(tierBadge("listed"), null);
+});
+
+test("selectHomeEvents picks upcoming co-hosted events and the next six dated events", () => {
+  const today = "2027-01-01";
+  const endedCohost = ev({ tier: "cohosted", start_date: "2026-12-01", end_date: "2026-12-02" });
+  const cohost = ev({ tier: "cohosted", start_date: "2027-03-20", end_date: null });
+  const anchor = ev({ tier: "anchor", start_date: "2027-02-01", end_date: null });
+  const tbc = unconfirmed();
+  const dated = Array.from({ length: 8 }, (_, i) =>
+    ev({ start_date: `2027-0${i + 1}-15`, end_date: null }),
+  );
+  const { cohosted, upcoming } = selectHomeEvents([endedCohost, cohost, anchor, tbc, ...dated], today);
+  assert.deepEqual(cohosted.map((e) => e.id), [cohost.id]);
+  assert.equal(upcoming.length, 6);
+  assert.ok(!upcoming.some((e) => e.id === anchor.id || e.id === tbc.id));
+  const starts = upcoming.map((e) => e.start_date!);
+  assert.deepEqual(starts, [...starts].sort());
+  assert.ok(upcoming.some((e) => e.id === cohost.id), "co-hosted events count as upcoming too");
+  assert.deepEqual(selectHomeEvents([], today), { cohosted: [], upcoming: [] });
+});
+
+test("describeEventError explains the one-anchor rule", () => {
+  assert.equal(
+    describeEventError({ code: "23505", message: 'duplicate key value violates unique constraint "events_one_anchor"' }),
+    "Only one event can be the anchor.",
+  );
 });
