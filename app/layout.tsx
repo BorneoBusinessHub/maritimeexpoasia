@@ -26,11 +26,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <footer className="bg-abyss text-pale">
           <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 text-base sm:grid-cols-2 sm:px-8">
             <div>
-              <p className="font-display text-2xl font-semibold tracking-tight text-white">Maritime Expo Asia 2027</p>
-              <p className="mt-1">Sibu, Sarawak. September 2027.</p>
-              <p className="mt-5 max-w-sm text-pale/80">
-                Summit hosted by the Sarawak Association of Marine Industries (SAMIN), co-organised by MarineX
-                International.
+              <p className="font-display text-2xl font-semibold tracking-tight text-white">Maritime Expo Asia</p>
+              <p className="mt-3 max-w-sm text-pale/80">
+                The home of Maritime Expo Asia 2027, maritime events we co-host with industry partners, and a calendar
+                of maritime events worldwide.
               </p>
             </div>
             <div className="sm:text-right">

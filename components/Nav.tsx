@@ -6,9 +6,9 @@ import { useEffect, useState } from "react";
 import { IconBadge, pill } from "@/components/pill";
 
 const LINKS = [
-  { href: "/", label: "Expo 2027" },
-  { href: "/summit-2027", label: "March Summit" },
+  { href: "/maritime-expo-asia-2027", label: "Expo 2027" },
   { href: "/events", label: "Events" },
+  { href: "/partner", label: "Partner with us" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -31,20 +31,20 @@ export default function Nav() {
 
   return (
     <>
-      <div className="fixed left-1/2 top-5 z-50 w-[calc(100%-2rem)] max-w-3xl -translate-x-1/2">
+      <div className="fixed left-1/2 top-5 z-50 w-[calc(100%-2rem)] max-w-4xl -translate-x-1/2">
         <div className="flex items-center justify-between rounded-full bg-white/80 py-2 pl-6 pr-2 shadow-[0_12px_40px_-16px_rgba(12,39,64,0.3)] ring-1 ring-ink/10 backdrop-blur-xl">
           {/* Text wordmark until a logo is supplied [TBC] */}
-          <Link href="/" onClick={() => setOpen(false)} className="font-display text-lg font-semibold tracking-tight text-deep">
+          <Link href="/" onClick={() => setOpen(false)} className="whitespace-nowrap font-display text-lg font-semibold tracking-tight text-deep">
             Maritime Expo Asia
           </Link>
 
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden items-center gap-1 lg:flex">
             {LINKS.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 aria-current={path === l.href || (l.href !== "/" && path.startsWith(`${l.href}/`)) ? "page" : undefined}
-                className="rounded-full px-4 py-2 text-sm font-medium text-ink/70 transition-colors duration-500 ease-fluid hover:text-deep aria-[current=page]:bg-deep/5 aria-[current=page]:text-deep"
+                className="whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium text-ink/70 transition-colors duration-500 ease-fluid hover:text-deep aria-[current=page]:bg-deep/5 aria-[current=page]:text-deep"
               >
                 {l.label}
               </Link>
@@ -61,7 +61,7 @@ export default function Nav() {
             aria-expanded={open}
             aria-controls="mobile-menu"
             onClick={() => setOpen(!open)}
-            className="relative size-10 rounded-full bg-deep md:hidden"
+            className="relative size-10 rounded-full bg-deep lg:hidden"
           >
             <span className={`${line} ${open ? "rotate-45" : "-translate-y-[3px]"}`} />
             <span className={`${line} ${open ? "-rotate-45" : "translate-y-[3px]"}`} />
@@ -73,7 +73,7 @@ export default function Nav() {
         id="mobile-menu"
         inert={!open}
         aria-hidden={!open}
-        className={`fixed inset-0 z-40 flex flex-col justify-center bg-deep/90 px-8 backdrop-blur-3xl transition-opacity duration-700 ease-fluid md:hidden ${
+        className={`fixed inset-0 z-40 flex flex-col justify-center bg-deep/90 px-8 backdrop-blur-3xl transition-opacity duration-700 ease-fluid lg:hidden ${
           open ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       >
