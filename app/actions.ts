@@ -1,6 +1,7 @@
 "use server";
 
-import { ENQUIRY_TYPES, type EnquiryType } from "@/lib/enquiry";
+import { ENQUIRY_TYPES, pickEventSlug, type EnquiryType } from "@/lib/enquiry";
+import { getApprovedEvents } from "@/lib/events-data";
 
 export type FormState = { ok: boolean; message: string };
 
@@ -10,6 +11,8 @@ const DETAIL_FIELDS: Record<EnquiryType, string[]> = {
   exhibitor: ["products", "tables"],
   sponsor: ["support"],
   contact: [],
+  cohost: [],
+  listing: ["event_name", "event_dates", "event_location", "event_website"],
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -35,9 +38,11 @@ export async function submitEnquiry(_prev: FormState, form: FormData): Promise<F
     message: field(form, "message") || null,
     details: Object.fromEntries(DETAIL_FIELDS[type].map((k) => [k, field(form, k, 500)])),
     consent: form.get("consent") === "on",
+    event_slug: pickEventSlug(field(form, "event", 200), await getApprovedEvents()),
   };
 
   if (!row.name) return { ok: false, message: "Please enter your name." };
+  if (type === "listing" && !row.details.event_name) return { ok: false, message: "Please enter the event name." };
   if (!EMAIL_RE.test(row.email)) return { ok: false, message: "Please enter a valid email address." };
   if (!row.consent) return { ok: false, message: "Please tick the consent box to continue." };
 

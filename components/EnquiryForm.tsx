@@ -11,6 +11,8 @@ const LABELS: Record<EnquiryType, string> = {
   exhibitor: "Exhibit",
   sponsor: "Sponsor",
   contact: "Contact",
+  cohost: "Co-host an event",
+  listing: "List your event",
 };
 
 const ATTENDEE_TYPES = ["Shipyard", "Buyer", "Supplier", "Technology provider", "Government", "Training", "Other"];
@@ -30,9 +32,12 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 export default function EnquiryForm({
   types,
   defaultType = types[0],
+  event,
 }: {
   types: EnquiryType[];
   defaultType?: EnquiryType;
+  /** Slug of the event this form belongs to; the lead is tagged with it. */
+  event?: string;
 }) {
   const [type, setType] = useState<EnquiryType>(types.includes(defaultType) ? defaultType : types[0]);
   const [state, action, pending] = useActionState<FormState, FormData>(submitEnquiry, { ok: false, message: "" });
@@ -48,6 +53,7 @@ export default function EnquiryForm({
   return (
     <form action={action} className="space-y-5">
       <input type="hidden" name="type" value={type} />
+      {event && <input type="hidden" name="event" value={event} />}
 
       {types.length > 1 && (
         <fieldset>
@@ -113,6 +119,23 @@ export default function EnquiryForm({
           </Field>
         )}
       </div>
+
+      {type === "listing" && (
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Field label="Event name *">
+            <input name="event_name" required className={input} />
+          </Field>
+          <Field label="Event dates">
+            <input name="event_dates" placeholder="e.g. 12–14 May 2027" className={input} />
+          </Field>
+          <Field label="City and country">
+            <input name="event_location" className={input} />
+          </Field>
+          <Field label="Official website">
+            <input name="event_website" type="url" placeholder="https://" className={input} />
+          </Field>
+        </div>
+      )}
 
       {type === "exhibitor" && (
         <Field label="Products and services">
