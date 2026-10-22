@@ -134,7 +134,7 @@ export default function EventForm({ event }: { event?: MaritimeEvent }) {
             ))}
           </select>
         </Field>
-        <Field label="Tier" hint="Only one event can be the anchor. Co-hosted events also need a page built for them.">
+        <Field label="Tier" hint="Only one event can be the anchor. Co-hosted events also need a page built for them, and stay on the home page until they have confirmed dates, so add the dates as soon as they are published.">
           <select name="tier" defaultValue={event?.tier ?? "listed"} className={input}>
             <option value="anchor">Our event (anchor)</option>
             <option value="cohosted">Co-hosted</option>

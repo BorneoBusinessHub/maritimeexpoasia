@@ -6,3 +6,18 @@ export type EnquiryType = (typeof ENQUIRY_TYPES)[number];
 export function pickEventSlug(raw: string, approved: { slug: string }[]): string | null {
   return raw && approved.some((e) => e.slug === raw) ? raw : null;
 }
+
+// Tagging must never cost a lead: if the event list cannot be read, the lead is saved untagged.
+export async function resolveEventSlug(raw: string, load: () => Promise<{ slug: string }[]>): Promise<string | null> {
+  if (!raw) return null;
+  try {
+    return pickEventSlug(raw, await load());
+  } catch {
+    return null;
+  }
+}
+
+// The insert failed only because the tagged event no longer exists (deleted after the list was cached).
+export function shouldRetryUntagged(status: number, body: string): boolean {
+  return status === 409 && body.includes("23503");
+}

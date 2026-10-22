@@ -1,6 +1,6 @@
 "use server";
 
-import { ENQUIRY_TYPES, pickEventSlug, type EnquiryType } from "@/lib/enquiry";
+import { ENQUIRY_TYPES, resolveEventSlug, shouldRetryUntagged, type EnquiryType } from "@/lib/enquiry";
 import { getApprovedEvents } from "@/lib/events-data";
 
 export type FormState = { ok: boolean; message: string };
@@ -38,7 +38,7 @@ export async function submitEnquiry(_prev: FormState, form: FormData): Promise<F
     message: field(form, "message") || null,
     details: Object.fromEntries(DETAIL_FIELDS[type].map((k) => [k, field(form, k, 500)])),
     consent: form.get("consent") === "on",
-    event_slug: pickEventSlug(field(form, "event", 200), await getApprovedEvents()),
+    event_slug: null as string | null,
   };
 
   if (!row.name) return { ok: false, message: "Please enter your name." };
@@ -46,7 +46,28 @@ export async function submitEnquiry(_prev: FormState, form: FormData): Promise<F
   if (!EMAIL_RE.test(row.email)) return { ok: false, message: "Please enter a valid email address." };
   if (!row.consent) return { ok: false, message: "Please tick the consent box to continue." };
 
-  const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1/enquiries`, {
+  row.event_slug = await resolveEventSlug(field(form, "event", 200), getApprovedEvents);
+
+  let res = await insertEnquiry(row);
+  let body = res.ok ? "" : await res.text();
+  if (!res.ok && row.event_slug && shouldRetryUntagged(res.status, body)) {
+    // The tagged event was deleted after the event list was cached: keep the lead, drop the tag.
+    row.event_slug = null;
+    res = await insertEnquiry(row);
+    body = res.ok ? "" : await res.text();
+  }
+  if (!res.ok) {
+    console.error("enquiry insert failed", res.status, body);
+    return { ok: false, message: "Sorry, we could not submit your enquiry. Please try again shortly." };
+  }
+
+  // Row is saved first, so a failed email never loses the lead.
+  await notify(row).catch((e) => console.error("notify failed", e));
+  return { ok: true, message: "Thank you. Your details have been received and our team will be in touch." };
+}
+
+function insertEnquiry(row: Record<string, unknown>) {
+  return fetch(`${process.env.SUPABASE_URL}/rest/v1/enquiries`, {
     method: "POST",
     headers: {
       apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -56,14 +77,6 @@ export async function submitEnquiry(_prev: FormState, form: FormData): Promise<F
     },
     body: JSON.stringify(row),
   });
-  if (!res.ok) {
-    console.error("enquiry insert failed", res.status, await res.text());
-    return { ok: false, message: "Sorry, we could not submit your enquiry. Please try again shortly." };
-  }
-
-  // Row is saved first, so a failed email never loses the lead.
-  await notify(row).catch((e) => console.error("notify failed", e));
-  return { ok: true, message: "Thank you. Your details have been received and our team will be in touch." };
 }
 
 async function notify(row: Record<string, unknown>) {
