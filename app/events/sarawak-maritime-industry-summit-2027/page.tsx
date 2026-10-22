@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import CohostedHero from "@/components/cohosted/CohostedHero";
 import HostedBy from "@/components/cohosted/HostedBy";
+import Timetable from "@/components/programme/Timetable";
+import SpeakerGrid from "@/components/programme/SpeakerGrid";
 import { Suspense } from "react";
 import EnquiryForm from "@/components/EnquiryForm";
 import Reveal from "@/components/Reveal";
 import UrlEnquiryForm from "@/components/UrlEnquiryForm";
 import { Bezel, Eyebrow, H2, Section } from "@/components/ui";
 import type { EnquiryType } from "@/lib/enquiry";
+import { confirmedSpeakers, timetableByDay } from "@/lib/programme";
+import { summit2027 } from "@/lib/programmes/summit-2027";
 import dryDock from "@/public/photos/vessel-dry-dock.jpg";
 
 export const metadata: Metadata = {
@@ -49,6 +53,8 @@ const FORM_TYPES: EnquiryType[] = ["interest", "exhibitor", "sponsor"];
 const EVENT = "sarawak-maritime-industry-summit-2027";
 
 export default function Summit() {
+  const hasTimetable = timetableByDay(summit2027).length > 0;
+  const hasSpeakers = confirmedSpeakers(summit2027).length > 0;
   return (
     <>
       <CohostedHero
@@ -95,7 +101,14 @@ export default function Summit() {
             </Reveal>
           ))}
         </div>
+        {!hasTimetable && (
+          <Reveal delay={200}>
+            <p className="mt-8 text-ink/70">Detailed timetable to be announced.</p>
+          </Reveal>
+        )}
       </Section>
+
+      <Timetable programme={summit2027} />
 
       <Section tone="white">
         <div className="grid gap-14 lg:grid-cols-[1fr_1.4fr]">
@@ -107,7 +120,7 @@ export default function Summit() {
               <H2>Key discussion themes.</H2>
             </Reveal>
             <Reveal delay={200}>
-              <p className="mt-6 text-ink/70">Speakers will be announced once confirmed.</p>
+              {!hasSpeakers && <p className="mt-6 text-ink/70">Speakers will be announced once confirmed.</p>}
             </Reveal>
           </div>
           <ol className="divide-y divide-ink/10 border-y border-ink/10">
@@ -122,6 +135,8 @@ export default function Summit() {
           </ol>
         </div>
       </Section>
+
+      <SpeakerGrid programme={summit2027} />
 
       <Section>
         <div className="grid gap-4 md:grid-cols-2">
